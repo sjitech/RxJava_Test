@@ -47,13 +47,15 @@ public class RxJava_Test {
 
         System.out.println("leave test function");
 
-        assertOut("17:02:56.571 [main] enter test function");
-        assertOut("17:02:56.667 [main] begin produce");
-        assertOut("17:02:56.667 [main] producer sleep a while");
-        assertOut("17:02:59.668 [main] notify consumer");
-        assertOut("17:02:59.668 [main] consumer got produced result");
-        assertOut("17:02:59.668 [main] end produce");
-        assertOut("17:02:59.669 [main] leave test function");
+        Util.delay(5000, () -> {
+            assertOut("17:02:56.571 [main] enter test function");
+            assertOut("17:02:56.667 [main] begin produce");
+            assertOut("17:02:56.667 [main] producer sleep a while");
+            assertOut("17:02:59.668 [main] notify consumer");
+            assertOut("17:02:59.668 [main] consumer got produced result");
+            assertOut("17:02:59.668 [main] end produce");
+            assertOut("17:02:59.669 [main] leave test function");
+        });
     }
 
     @Test
@@ -68,7 +70,7 @@ public class RxJava_Test {
 
         System.out.println("leave test function");
 
-        Util.delay(3500, () -> {
+        Util.delay(5000, () -> {
             assertOut("17:38:05.527 [main] enter test function");
             assertOut("17:38:05.641 [main] leave test function");
             assertOut("17:38:05.650 [RxNewThreadScheduler-1] begin produce");
@@ -104,7 +106,7 @@ public class RxJava_Test {
                 assertOut("17:49:03.486 [RxNewThreadScheduler-2] end produce");
                 assertOut("17:49:03.486 [RxNewThreadScheduler-1] consumer got produced result");
                 assertOut("17:49:03.486 [RxNewThreadScheduler-1] consumer sleep a while");
-            } catch(ComparisonFailure e) {
+            } catch (ComparisonFailure e) {
                 System.out.rewind();
                 assertOut("17:49:00.296 [main] enter test function");
                 assertOut("17:49:00.481 [main] leave test function");
@@ -127,13 +129,14 @@ public class RxJava_Test {
 
         System.out.println("leave test function");
 
-        assertOut("17:08:28.050 [main] enter test function");
-        assertOut("17:08:28.145 [main] begin produce");
-        assertOut("17:08:28.145 [main] producer sleep a while");
-        assertOut("17:08:31.145 [main] notify consumer");
-        assertOut("17:08:31.146 [main] end produce");
-        assertOut("17:08:31.146 [main] leave test function");
-
+        Util.delay(5000, () -> {
+            assertOut("17:08:28.050 [main] enter test function");
+            assertOut("17:08:28.145 [main] begin produce");
+            assertOut("17:08:28.145 [main] producer sleep a while");
+            assertOut("17:08:31.145 [main] notify consumer");
+            assertOut("17:08:31.146 [main] end produce");
+            assertOut("17:08:31.146 [main] leave test function");
+        });
     }
 
     @Test
@@ -144,7 +147,9 @@ public class RxJava_Test {
 
         System.out.println("leave test function");
 
-        assertOut("17:06:31.746 [main] enter test function");
-        assertOut("17:06:31.834 [main] leave test function");
+        Util.delay(1000, () -> {
+            assertOut("17:06:31.746 [main] enter test function");
+            assertOut("17:06:31.834 [main] leave test function");
+        });
     }
 }

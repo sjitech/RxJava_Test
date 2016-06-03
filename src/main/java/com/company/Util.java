@@ -59,6 +59,6 @@ public class Util {
         new Thread(() -> {
             sleep(millis);
             callback.run();
-        }).run();
+        }).start();
     }
 }
