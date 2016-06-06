@@ -14,5 +14,6 @@ Conclusion:
 
    To run test:
    ```
-   gradle test
+   ./gradlew test
    ```
+
