@@ -235,11 +235,11 @@ public class RxJava_Test {
         System.out.println(text);
     }
 
-    private String popLine() throws Exception {
+    private String popLine() throws InterruptedException {
         return outQueue.take();
     }
 
-    private void assertOut(String exceptedStr) throws Exception {
+    private void assertOut(String exceptedStr) throws InterruptedException {
         Assert.assertEquals(exceptedStr.substring(12), popLine().substring(12));
     }
 
