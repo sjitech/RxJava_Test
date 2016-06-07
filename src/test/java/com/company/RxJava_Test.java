@@ -7,9 +7,11 @@ import rx.Scheduler;
 import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
+import java.lang.ref.ReferenceQueue;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RxJava_Test {
 
@@ -40,68 +42,178 @@ public class RxJava_Test {
             println("enter test function");
 
             slowProducer
-                    .subscribe(producedResult -> {
-                        println("---- consumer got produced result");
+                    .subscribe(result -> {
+                        println("---- consumer got " + result);
                     });
 
             println("leave test function");
-        }, "TestThread").start();
+        }, "CurrentThread").start();
 
-        assertOut("17:02:56.571 @TestThread enter test function");
-        assertOut("17:02:56.667 @TestThread [SLOW producer] begin");
-        assertOut("17:02:56.667 @TestThread [SLOW producer] sleep a while");
-        assertOut("17:02:59.668 @TestThread [SLOW producer] notify consumer");
-        assertOut("17:02:59.668 @TestThread ---- consumer got produced result");
-        assertOut("17:02:59.668 @TestThread [SLOW producer] end");
-        assertOut("17:02:59.669 @TestThread leave test function");
+        assertOut("17:02:56.571 @CurrentThread enter test function");
+        assertOut("17:02:56.667 @CurrentThread [SLOW producer] begin");
+        assertOut("17:02:56.667 @CurrentThread [SLOW producer] sleep a while");
+        assertOut("17:02:59.668 @CurrentThread [SLOW producer] notify consumer");
+        assertOut("17:02:59.668 @CurrentThread ---- consumer got SLOW result");
+        assertOut("17:02:59.668 @CurrentThread [SLOW producer] end");
+        assertOut("17:02:59.669 @CurrentThread leave test function");
     }
 
     @Test
-    public void test_rx_will_produce_and_consume_in_an_RxScheduler_thread() throws Exception {
+    public void test_rx_will_produce_in_an_RxScheduler_thread_and_consume_in_same_thread() throws Exception {
         new Thread(() -> {
             println("enter test function");
 
             slowProducer
-                    .subscribeOn(createTestScheduler("RxNewThreadScheduler-1")) //cause producer run in new thread
-                    .subscribe(producedResult -> {
-                        println("---- consumer got produced result");
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause producer run in new thread
+                    .subscribe(result -> {
+                        println("---- consumer got " + result);
                     });
 
             println("leave test function");
-        }, "TestThread").start();
+        }, "CurrentThread").start();
 
-        assertOut("11:49:51.169 @TestThread enter test function");
-        assertOut("11:49:51.217 @TestThread leave test function");
-        assertOut("11:49:51.218 @RxNewThreadScheduler-1 [SLOW producer] begin");
-        assertOut("11:49:51.218 @RxNewThreadScheduler-1 [SLOW producer] sleep a while");
-        assertOut("11:49:54.221 @RxNewThreadScheduler-1 [SLOW producer] notify consumer");
-        assertOut("11:49:54.221 @RxNewThreadScheduler-1 ---- consumer got produced result");
-        assertOut("11:49:54.222 @RxNewThreadScheduler-1 [SLOW producer] end");
+        assertOut("11:49:51.169 @CurrentThread enter test function");
+        assertOut("11:49:51.217 @CurrentThread leave test function");
+        assertOut("11:49:51.218 @RxNewThread-1 [SLOW producer] begin");
+        assertOut("11:49:51.218 @RxNewThread-1 [SLOW producer] sleep a while");
+        assertOut("11:49:54.221 @RxNewThread-1 [SLOW producer] notify consumer");
+        assertOut("11:49:54.221 @RxNewThread-1 ---- consumer got SLOW result");
+        assertOut("11:49:54.222 @RxNewThread-1 [SLOW producer] end");
     }
 
     @Test
-    public void test_rx_will_produce_in_an_RxScheduler_thread_and_consume_in_another_RxScheduler_thread() throws Exception {
+    public void test_rx_will_produce_in_an_thread_and_consume_in_another_thread() throws Exception {
         new Thread(() -> {
             println("enter test function");
 
             slowProducer
-                    .subscribeOn(createTestScheduler("RxNewThreadScheduler-1")) //cause producer run in new thread
-                    .observeOn(createTestScheduler("RxNewThreadScheduler-2")) //cause consumer run in another new thread
-                    .subscribe(producedResult -> {
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause producer run in new thread
+                    .observeOn(createTestScheduler("RxNewThread-2")) //cause consumer run in another new thread
+                    .subscribe(result -> {
                         sleep(1); //sleep 1ms to just let other thread run so can get fixed output
-                        println("---- consumer got produced result");
+                        println("---- consumer got " + result);
                     });
 
             println("leave test function");
-        }, "TestThread").start();
+        }, "CurrentThread").start();
 
-        assertOut("12:41:10.523 @TestThread enter test function");
-        assertOut("12:41:10.676 @TestThread leave test function");
-        assertOut("12:41:10.678 @RxNewThreadScheduler-1 [SLOW producer] begin");
-        assertOut("12:41:10.678 @RxNewThreadScheduler-1 [SLOW producer] sleep a while");
-        assertOut("12:41:13.682 @RxNewThreadScheduler-1 [SLOW producer] notify consumer");
-        assertOut("12:41:13.682 @RxNewThreadScheduler-1 [SLOW producer] end");
-        assertOut("12:41:13.683 @RxNewThreadScheduler-2 ---- consumer got produced result");
+        assertOut("12:41:10.523 @CurrentThread enter test function");
+        assertOut("12:41:10.676 @CurrentThread leave test function");
+        assertOut("12:41:10.678 @RxNewThread-1 [SLOW producer] begin");
+        assertOut("12:41:10.678 @RxNewThread-1 [SLOW producer] sleep a while");
+        assertOut("12:41:13.682 @RxNewThread-1 [SLOW producer] notify consumer");
+        assertOut("12:41:13.682 @RxNewThread-1 [SLOW producer] end");
+        assertOut("12:41:13.683 @RxNewThread-2 ---- consumer got SLOW result");
+    }
+
+    @Test
+    public void test_rx_toBlocking_publisher_consumer_all_in_current_thread() throws Exception {
+        new Thread(() -> {
+            println("enter test function");
+
+            String result = slowProducer
+                    .toBlocking().first();
+            println("---- got " + result);
+
+            println("leave test function");
+        }, "CurrentThread").start();
+
+        assertOut("00:31:52.775 @CurrentThread enter test function");
+        assertOut("00:31:52.792 @CurrentThread [SLOW producer] begin");
+        assertOut("00:31:52.793 @CurrentThread [SLOW producer] sleep a while");
+        assertOut("00:31:55.798 @CurrentThread [SLOW producer] notify consumer");
+        assertOut("00:31:55.799 @CurrentThread [SLOW producer] end");
+        assertOut("00:31:55.800 @CurrentThread ---- got SLOW result");
+        assertOut("00:31:55.800 @CurrentThread leave test function");
+    }
+
+    @Test
+    public void test_rx_toBlocking_publisher_in_a_thread() throws Exception {
+        new Thread(() -> {
+            println("enter test function");
+
+            String result = slowProducer
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause producer run in new thread
+                    .observeOn(createTestScheduler("RxNewThread-2")) //cause consumer run in another new thread
+                    .toBlocking().first();
+            println("---- got " + result);
+
+            println("leave test function");
+        }, "CurrentThread").start();
+
+        assertOut("00:33:41.042 @CurrentThread enter test function");
+        assertOut("00:33:41.210 @RxNewThread-1 [SLOW producer] begin");
+        assertOut("00:33:41.210 @RxNewThread-1 [SLOW producer] sleep a while");
+        assertOut("00:33:44.212 @RxNewThread-1 [SLOW producer] notify consumer");
+        assertOut("00:33:44.213 @RxNewThread-1 [SLOW producer] end");
+        assertOut("00:33:44.214 @CurrentThread ---- got SLOW result");
+        assertOut("00:33:44.214 @CurrentThread leave test function");
+    }
+
+    @Test
+    public void test_rx_toBlocking_more_complicated_yet_meaningless() throws Exception {
+        new Thread(() -> {
+            println("enter test function");
+
+            String result = slowProducer
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause producer run in new thread
+                    .observeOn(createTestScheduler("RxNewThread-2")) //cause consumer run in another new thread
+                    .toBlocking().first();
+            println("---- got " + result);
+
+            println("leave test function");
+        }, "CurrentThread").start();
+
+        assertOut("23:49:54.227 @CurrentThread enter test function");
+        assertOut("23:49:54.381 @RxNewThread-1 [SLOW producer] begin");
+        assertOut("23:49:54.381 @RxNewThread-1 [SLOW producer] sleep a while");
+        assertOut("23:49:57.385 @RxNewThread-1 [SLOW producer] notify consumer");
+        assertOut("23:49:57.386 @RxNewThread-1 [SLOW producer] end");
+        assertOut("23:49:57.387 @CurrentThread ---- got SLOW result");
+        assertOut("23:49:57.387 @CurrentThread leave test function");
+    }
+
+    @Test
+    public void test_toBlocking_simulation() throws Exception {
+        new Thread(() -> {
+            println("enter test function");
+
+            AtomicReference<String> out_result = new AtomicReference<String>();
+
+            slowProducer
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause producer run in new thread
+                    .observeOn(createTestScheduler("RxNewThread-2")) //cause consumer run in another new thread
+                    .subscribe(result -> {
+                        sleep(1); //sleep 1ms to just let other thread run so can get fixed output
+                        println("---- consumer got " + result);
+                        out_result.set(result);
+
+                        synchronized (out_result) {
+                            out_result.notifyAll();
+                        }
+                    });
+
+            synchronized (out_result) {
+                try {
+                    out_result.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            println("---- got " + out_result.get());
+
+            println("leave test function");
+        }, "CurrentThread").start();
+
+        assertOut("00:35:22.900 @CurrentThread enter test function");
+        assertOut("00:35:23.019 @RxNewThread-1 [SLOW producer] begin");
+        assertOut("00:35:23.019 @RxNewThread-1 [SLOW producer] sleep a while");
+        assertOut("00:35:26.023 @RxNewThread-1 [SLOW producer] notify consumer");
+        assertOut("00:35:26.024 @RxNewThread-1 [SLOW producer] end");
+        assertOut("00:35:26.026 @RxNewThread-2 ---- consumer got SLOW result");
+        assertOut("00:35:26.026 @CurrentThread ---- got SLOW result");
+        assertOut("00:35:26.027 @CurrentThread leave test function");
     }
 
     @Test
@@ -113,14 +225,14 @@ public class RxJava_Test {
                     .subscribe();
 
             println("leave test function");
-        }, "TestThread").start();
+        }, "CurrentThread").start();
 
-        assertOut("17:08:28.050 @TestThread enter test function");
-        assertOut("17:08:28.145 @TestThread [SLOW producer] begin");
-        assertOut("17:08:28.145 @TestThread [SLOW producer] sleep a while");
-        assertOut("17:08:31.145 @TestThread [SLOW producer] notify consumer");
-        assertOut("17:08:31.146 @TestThread [SLOW producer] end");
-        assertOut("17:08:31.146 @TestThread leave test function");
+        assertOut("17:08:28.050 @CurrentThread enter test function");
+        assertOut("17:08:28.145 @CurrentThread [SLOW producer] begin");
+        assertOut("17:08:28.145 @CurrentThread [SLOW producer] sleep a while");
+        assertOut("17:08:31.145 @CurrentThread [SLOW producer] notify consumer");
+        assertOut("17:08:31.146 @CurrentThread [SLOW producer] end");
+        assertOut("17:08:31.146 @CurrentThread leave test function");
     }
 
     @Test
@@ -136,35 +248,35 @@ public class RxJava_Test {
             );
 
             println("leave test function");
-        }, "TestThread").start();
+        }, "CurrentThread").start();
 
-        assertOut("17:08:28.050 @TestThread enter test function");
-        assertOut("17:08:28.050 @TestThread leave test function");
+        assertOut("17:08:28.050 @CurrentThread enter test function");
+        assertOut("17:08:28.050 @CurrentThread leave test function");
     }
 
     @Test
     public void test_merge_in_parallel() throws Exception {
         new Thread(() -> {
             slowProducer
-                    .subscribeOn(createTestScheduler("RxNewThreadScheduler-1"))
+                    .subscribeOn(createTestScheduler("RxNewThread-1"))
                     .mergeWith(
                             fastProducer
-                                    .subscribeOn(createTestScheduler("RxNewThreadScheduler-2"))
+                                    .subscribeOn(createTestScheduler("RxNewThread-2"))
                     )
-                    .subscribe(producedResult -> {
-                        println("---- consumer got " + producedResult);
+                    .subscribe(result -> {
+                        println("---- consumer got " + result);
 
                     });
-        }, "TestThread").start();
+        }, "CurrentThread").start();
 
-        assertOut("13:21:01.706 @RxNewThreadScheduler-1 [SLOW producer] begin");
-        assertOut("13:21:01.711 @RxNewThreadScheduler-1 [SLOW producer] sleep a while");
-        assertOut("13:21:01.746 @RxNewThreadScheduler-2 [FAST producer] begin");
-        assertOut("13:21:01.746 @RxNewThreadScheduler-2 ---- consumer got FAST result");
-        assertOut("13:21:01.748 @RxNewThreadScheduler-2 [FAST producer] end");
-        assertOut("13:21:04.713 @RxNewThreadScheduler-1 [SLOW producer] notify consumer");
-        assertOut("13:21:04.713 @RxNewThreadScheduler-1 ---- consumer got SLOW result");
-        assertOut("13:21:04.713 @RxNewThreadScheduler-1 [SLOW producer] end");
+        assertOut("13:21:01.706 @RxNewThread-1 [SLOW producer] begin");
+        assertOut("13:21:01.711 @RxNewThread-1 [SLOW producer] sleep a while");
+        assertOut("13:21:01.746 @RxNewThread-2 [FAST producer] begin");
+        assertOut("13:21:01.746 @RxNewThread-2 ---- consumer got FAST result");
+        assertOut("13:21:01.748 @RxNewThread-2 [FAST producer] end");
+        assertOut("13:21:04.713 @RxNewThread-1 [SLOW producer] notify consumer");
+        assertOut("13:21:04.713 @RxNewThread-1 ---- consumer got SLOW result");
+        assertOut("13:21:04.713 @RxNewThread-1 [SLOW producer] end");
     }
 
     @Test
@@ -174,45 +286,45 @@ public class RxJava_Test {
                     .mergeWith(
                             fastProducer
                     )
-                    .subscribe(producedResult -> {
-                        println("---- consumer got " + producedResult);
+                    .subscribe(result -> {
+                        println("---- consumer got " + result);
 
                     });
-        }, "TestThread").start();
+        }, "CurrentThread").start();
 
-        assertOut("13:24:51.112 @TestThread [SLOW producer] begin");
-        assertOut("13:24:51.114 @TestThread [SLOW producer] sleep a while");
-        assertOut("13:24:54.118 @TestThread [SLOW producer] notify consumer");
-        assertOut("13:24:54.119 @TestThread ---- consumer got SLOW result");
-        assertOut("13:24:54.119 @TestThread [SLOW producer] end");
-        assertOut("13:24:54.174 @TestThread [FAST producer] begin");
-        assertOut("13:24:54.174 @TestThread ---- consumer got FAST result");
-        assertOut("13:24:54.174 @TestThread [FAST producer] end");
+        assertOut("13:24:51.112 @CurrentThread [SLOW producer] begin");
+        assertOut("13:24:51.114 @CurrentThread [SLOW producer] sleep a while");
+        assertOut("13:24:54.118 @CurrentThread [SLOW producer] notify consumer");
+        assertOut("13:24:54.119 @CurrentThread ---- consumer got SLOW result");
+        assertOut("13:24:54.119 @CurrentThread [SLOW producer] end");
+        assertOut("13:24:54.174 @CurrentThread [FAST producer] begin");
+        assertOut("13:24:54.174 @CurrentThread ---- consumer got FAST result");
+        assertOut("13:24:54.174 @CurrentThread [FAST producer] end");
     }
 
     @Test
     public void test_concat_will_always_serially() throws Exception {
         new Thread(() -> {
             slowProducer
-                    .subscribeOn(createTestScheduler("RxNewThreadScheduler-1"))
+                    .subscribeOn(createTestScheduler("RxNewThread-1"))
                     .concatWith(
                             fastProducer
-                                    .subscribeOn(createTestScheduler("RxNewThreadScheduler-2"))
+                                    .subscribeOn(createTestScheduler("RxNewThread-2"))
                     )
-                    .subscribe(producedResult -> {
-                        println("---- consumer got " + producedResult);
+                    .subscribe(result -> {
+                        println("---- consumer got " + result);
 
                     });
-        }, "TestThread").start();
+        }, "CurrentThread").start();
 
-        assertOut("13:22:26.701 @RxNewThreadScheduler-1 [SLOW producer] begin");
-        assertOut("13:22:26.702 @RxNewThreadScheduler-1 [SLOW producer] sleep a while");
-        assertOut("13:22:29.705 @RxNewThreadScheduler-1 [SLOW producer] notify consumer");
-        assertOut("13:22:29.706 @RxNewThreadScheduler-1 ---- consumer got SLOW result");
-        assertOut("13:22:29.707 @RxNewThreadScheduler-1 [SLOW producer] end");
-        assertOut("13:22:29.758 @RxNewThreadScheduler-2 [FAST producer] begin");
-        assertOut("13:22:29.758 @RxNewThreadScheduler-2 ---- consumer got FAST result");
-        assertOut("13:22:29.759 @RxNewThreadScheduler-2 [FAST producer] end");
+        assertOut("13:22:26.701 @RxNewThread-1 [SLOW producer] begin");
+        assertOut("13:22:26.702 @RxNewThread-1 [SLOW producer] sleep a while");
+        assertOut("13:22:29.705 @RxNewThread-1 [SLOW producer] notify consumer");
+        assertOut("13:22:29.706 @RxNewThread-1 ---- consumer got SLOW result");
+        assertOut("13:22:29.707 @RxNewThread-1 [SLOW producer] end");
+        assertOut("13:22:29.758 @RxNewThread-2 [FAST producer] begin");
+        assertOut("13:22:29.758 @RxNewThread-2 ---- consumer got FAST result");
+        assertOut("13:22:29.759 @RxNewThread-2 [FAST producer] end");
     }
 
     ////////////////////////////////////////////////////////////////////////
