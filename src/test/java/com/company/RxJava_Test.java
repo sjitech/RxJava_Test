@@ -47,7 +47,7 @@ public class RxJava_Test {
                     });
 
             println("leave test function");
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("17:02:56.571 @CurrentThread enter test function");
         assertOut("17:02:56.667 @CurrentThread [SLOW producer] begin");
@@ -70,7 +70,7 @@ public class RxJava_Test {
                     });
 
             println("leave test function");
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("11:49:51.169 @CurrentThread enter test function");
         assertOut("11:49:51.217 @CurrentThread leave test function");
@@ -95,7 +95,7 @@ public class RxJava_Test {
                     });
 
             println("leave test function");
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("12:41:10.523 @CurrentThread enter test function");
         assertOut("12:41:10.676 @CurrentThread leave test function");
@@ -116,7 +116,7 @@ public class RxJava_Test {
             println("---- got " + result);
 
             println("leave test function");
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("00:31:52.775 @CurrentThread enter test function");
         assertOut("00:31:52.792 @CurrentThread [SLOW producer] begin");
@@ -139,7 +139,7 @@ public class RxJava_Test {
             println("---- got " + result);
 
             println("leave test function");
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("00:33:41.042 @CurrentThread enter test function");
         assertOut("00:33:41.210 @RxNewThread-1 [SLOW producer] begin");
@@ -162,7 +162,7 @@ public class RxJava_Test {
             println("---- got " + result);
 
             println("leave test function");
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("23:49:54.227 @CurrentThread enter test function");
         assertOut("23:49:54.381 @RxNewThread-1 [SLOW producer] begin");
@@ -204,7 +204,7 @@ public class RxJava_Test {
             println("---- got " + out_result.get());
 
             println("leave test function");
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("00:35:22.900 @CurrentThread enter test function");
         assertOut("00:35:23.019 @RxNewThread-1 [SLOW producer] begin");
@@ -225,7 +225,7 @@ public class RxJava_Test {
                     .subscribe();
 
             println("leave test function");
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("17:08:28.050 @CurrentThread enter test function");
         assertOut("17:08:28.145 @CurrentThread [SLOW producer] begin");
@@ -248,7 +248,7 @@ public class RxJava_Test {
             );
 
             println("leave test function");
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("17:08:28.050 @CurrentThread enter test function");
         assertOut("17:08:28.050 @CurrentThread leave test function");
@@ -267,7 +267,7 @@ public class RxJava_Test {
                         println("---- consumer got " + result);
 
                     });
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("13:21:01.706 @RxNewThread-1 [SLOW producer] begin");
         assertOut("13:21:01.711 @RxNewThread-1 [SLOW producer] sleep a while");
@@ -290,7 +290,7 @@ public class RxJava_Test {
                         println("---- consumer got " + result);
 
                     });
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("13:24:51.112 @CurrentThread [SLOW producer] begin");
         assertOut("13:24:51.114 @CurrentThread [SLOW producer] sleep a while");
@@ -315,7 +315,7 @@ public class RxJava_Test {
                         println("---- consumer got " + result);
 
                     });
-        }, "CurrentThread").start();
+        }, "CurrentThread" /*threadName*/).start();
 
         assertOut("13:22:26.701 @RxNewThread-1 [SLOW producer] begin");
         assertOut("13:22:26.702 @RxNewThread-1 [SLOW producer] sleep a while");
@@ -332,8 +332,9 @@ public class RxJava_Test {
     ////////////////////////////////////////////////////////////////////////
 
 
-    private static Scheduler createTestScheduler(String name) {
-        return Schedulers.from(command -> new Thread(command, name).start());
+    private static Scheduler createTestScheduler(String threadName) {
+        //just for test, get predictable thread name instead unpredictable thread pool name
+        return Schedulers.from(command -> new Thread(command, threadName).start());
     }
 
 
