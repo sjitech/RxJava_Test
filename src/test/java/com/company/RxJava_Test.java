@@ -404,25 +404,6 @@ public class RxJava_Test {
     }
 
     @Test
-    public void test_rx_will_do_nothing_if_not_subscribed() throws Exception {
-        new Thread(() -> {
-            println("enter test function");
-
-            Observable.create(subscriber -> {
-                        println("anything can be ok");
-                        subscriber.onNext("result");
-                        subscriber.onCompleted();
-                    }
-            );
-
-            println("leave test function");
-        }, "CurrentThread" /*threadName*/).start();
-
-        assertOut("17:08:28.050 @CurrentThread enter test function");
-        assertOut("17:08:28.050 @CurrentThread leave test function");
-    }
-
-    @Test
     public void test_rx_will_produce_if_subscribe_called_even_without_callback() throws Exception {
         new Thread(() -> {
             println("enter test function");
@@ -439,6 +420,25 @@ public class RxJava_Test {
         assertOut("17:08:31.145 @CurrentThread [SLOW publisher] publish");
         assertOut("17:08:31.146 @CurrentThread [SLOW publisher] end");
         assertOut("17:08:31.146 @CurrentThread leave test function");
+    }
+
+    @Test
+    public void test_rx_will_do_nothing_if_not_subscribed() throws Exception {
+        new Thread(() -> {
+            println("enter test function");
+
+            Observable.create(subscriber -> {
+                        println("anything can be ok");
+                        subscriber.onNext("result");
+                        subscriber.onCompleted();
+                    }
+            );
+
+            println("leave test function");
+        }, "CurrentThread" /*threadName*/).start();
+
+        assertOut("17:08:28.050 @CurrentThread enter test function");
+        assertOut("17:08:28.050 @CurrentThread leave test function");
     }
 
     @Test
