@@ -2,7 +2,7 @@
 Test RxJava producer/consumer threading
 
 Conclusion:
-   Same as http://stackoverflow.com/questions/29355741/rxjava-observing-on-calling-subscribing-thread
+   Same as http://stackoverflow.com/a/29364009/2293666
    
    To enable producer(or says publisher) run in other thread, you need call `subscribeOn(...threading model...)` 
    
