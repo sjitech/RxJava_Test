@@ -338,7 +338,7 @@ public class RxJava_Test {
 
             slowPublisher
                     .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
-                    .doOnNext(out_result1::set) //same as result -> out_result1.set(result)
+                    .doOnNext(out_result1::set) //same as (result) -> out_result1.set(result)
                     .doOnCompleted(latch::countDown) //same as () -> latch.countDown()
                     .subscribe();
 
@@ -381,7 +381,7 @@ public class RxJava_Test {
 
             slowPublisher
                     .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
-                    .doOnNext(out_result1::set) //same as result -> out_result1.set(result)
+                    .doOnNext(out_result1::set) //same as (result) -> out_result1.set(result)
                     .toCompletable() //so can mergeWith other type rx
                     .mergeWith(
                             incompatiblePublisher
