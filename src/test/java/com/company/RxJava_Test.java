@@ -320,24 +320,20 @@ public class RxJava_Test {
         new Thread(() -> {
             println("enter test function");
 
-            AtomicReference<String> out_result1 = new AtomicReference<String>();
-            AtomicReference<StringBuilder> out_result2 = new AtomicReference<StringBuilder>();
+            AtomicReference<String> out_result1 = new AtomicReference<>();
+            AtomicReference<StringBuilder> out_result2 = new AtomicReference<>();
             CountDownLatch latch = new CountDownLatch(2);
 
             slowPublisher
                     .subscribeOn(createTestScheduler("RxNewThread-1"))
-                    .doOnNext(result -> {
-                        out_result1.set(result);
-                    })
-                    .doOnCompleted(() -> latch.countDown())
+                    .doOnNext(out_result1::set) //same as result -> out_result1.set(result)
+                    .doOnCompleted(latch::countDown) //same as () -> latch.countDown()
                     .subscribe();
 
             incompatiblePublisher
                     .subscribeOn(createTestScheduler("RxNewThread-2"))
-                    .doOnNext(result -> {
-                        out_result2.set(result);
-                    })
-                    .doOnCompleted(() -> latch.countDown())
+                    .doOnNext(out_result2::set)
+                    .doOnCompleted(latch::countDown)
                     .subscribe();
 
             try {
@@ -346,6 +342,7 @@ public class RxJava_Test {
                 e.printStackTrace();
             }
 
+            sleep(5); //sleep 5ms to let other thread run so can get predictable output
             println("---- got " + out_result1.get() + " and " + out_result2.get());
 
             println("leave test function");
@@ -367,40 +364,38 @@ public class RxJava_Test {
         new Thread(() -> {
             println("enter test function");
 
-            AtomicReference<String> out_result1 = new AtomicReference<String>();
-            AtomicReference<StringBuilder> out_result2 = new AtomicReference<StringBuilder>();
+            AtomicReference<String> out_result1 = new AtomicReference<>();
+            AtomicReference<StringBuilder> out_result2 = new AtomicReference<>();
 
             slowPublisher
                     .subscribeOn(createTestScheduler("RxNewThread-1"))
-                    .doOnNext(result -> {
-                        out_result1.set(result);
-                    })
+                    .doOnNext(out_result1::set) //same as result -> out_result1.set(result)
                     .toCompletable() //so can mergeWith other type rx
                     .mergeWith(
                             incompatiblePublisher
                                     .subscribeOn(createTestScheduler("RxNewThread-2"))
-                                    .doOnNext(result -> {
-                                        out_result2.set(result);
-                                    })
+                                    .doOnNext(out_result2::set)
                                     .toCompletable()
                     )
                     .toObservable()
                     .toBlocking()
                     .subscribe();
 
+            sleep(5); //sleep 5ms to let other thread run so can get predictable output
             println("---- got " + out_result1.get() + " and " + out_result2.get());
 
             println("leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("19:29:38.712 @CurrentThread enter test function");
-        assertOut("19:29:38.824 @RxNewThread-1 [SLOW publisher] begin");
-        assertOut("19:29:38.825 @RxNewThread-1 [SLOW publisher] do some work");
-        assertOut("19:29:38.877 @RxNewThread-2 [Incompatible publisher] begin");
-        assertOut("19:29:38.882 @RxNewThread-2 [Incompatible publisher] end");
-        assertOut("19:29:41.828 @RxNewThread-1 [SLOW publisher] publish");
-        assertOut("19:29:41.828 @RxNewThread-1 [SLOW publisher] end");
-        assertOut("19:29:41.828 @CurrentThread ---- got SLOW result and incompatible result");
+        assertOut("19:35:08.299 @CurrentThread enter test function");
+        assertOut("19:35:08.358 @RxNewThread-1 [SLOW publisher] begin");
+        assertOut("19:35:08.359 @RxNewThread-1 [SLOW publisher] do some work");
+        assertOut("19:35:08.410 @RxNewThread-2 [Incompatible publisher] begin");
+        assertOut("19:35:08.414 @RxNewThread-2 [Incompatible publisher] end");
+        assertOut("19:35:11.364 @RxNewThread-1 [SLOW publisher] publish");
+        assertOut("19:35:11.364 @RxNewThread-1 [SLOW publisher] end");
+        assertOut("19:35:11.364 @CurrentThread ---- got SLOW result and incompatible result");
+        assertOut("19:35:11.364 @CurrentThread leave test function");
     }
 
     @Test
