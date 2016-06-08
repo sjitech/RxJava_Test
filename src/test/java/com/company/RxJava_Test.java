@@ -5,6 +5,7 @@ import org.junit.Test;
 import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
+import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 import java.time.LocalTime;
@@ -126,6 +127,7 @@ public class RxJava_Test {
 
             String result = slowPublisher
                     .toBlocking().first();
+
             println("---- got " + result);
 
             println("leave test function");
@@ -149,6 +151,8 @@ public class RxJava_Test {
                     .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
                     .observeOn(createTestScheduler("RxNewThread-2")) //cause subscriber run in another new thread
                     .toBlocking().first();
+
+            sleep(1); //sleep 1ms to let other thread run so can get predictable output
             println("---- got " + result);
 
             println("leave test function");
@@ -172,6 +176,8 @@ public class RxJava_Test {
                     .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
                     .observeOn(createTestScheduler("RxNewThread-2")) //cause subscriber run in another new thread
                     .toBlocking().first();
+
+            sleep(1); //sleep 1ms to let other thread run so can get predictable output
             println("---- got " + result);
 
             println("leave test function");
@@ -214,6 +220,7 @@ public class RxJava_Test {
                 }
             }
 
+            sleep(1); //sleep 1ms to let other thread run so can get predictable output
             println("---- got " + out_result.get());
 
             println("leave test function");
@@ -225,8 +232,8 @@ public class RxJava_Test {
         assertOut("00:35:26.023 @RxNewThread-1 [SLOW publisher] publish");
         assertOut("00:35:26.024 @RxNewThread-1 [SLOW publisher] end");
         assertOut("00:35:26.026 @RxNewThread-2 ---- subscriber got SLOW result");
-        assertOut("00:35:26.026 @CurrentThread ---- got SLOW result");
-        assertOut("00:35:26.027 @CurrentThread leave test function");
+        assertOut("00:35:26.027 @CurrentThread ---- got SLOW result");
+        assertOut("00:35:26.028 @CurrentThread leave test function");
     }
 
     @Test
@@ -347,7 +354,7 @@ public class RxJava_Test {
                 e.printStackTrace();
             }
 
-            sleep(1); //sleep 1
+            sleep(1); //sleep 1ms to let other thread run so can get predictable output
             println("---- got " + out_result1.get() + " and " + out_result2.get());
 
             println("leave test function");
@@ -448,8 +455,7 @@ public class RxJava_Test {
 
             try {
                 errorPublisher
-                        .toBlocking()
-                        .first();
+                        .toBlocking().first();
             } catch (Exception e) {
                 println("test1: " + e);
             }
@@ -457,8 +463,7 @@ public class RxJava_Test {
             try {
                 errorPublisher
                         .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
-                        .toBlocking()
-                        .first();
+                        .toBlocking().first();
             } catch (Exception e) {
                 println("test2: " + e);
             }
