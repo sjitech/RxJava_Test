@@ -5,7 +5,6 @@ import org.junit.Test;
 import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
-import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 import java.time.LocalTime;
