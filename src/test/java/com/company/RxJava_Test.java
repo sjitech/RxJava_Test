@@ -3,6 +3,7 @@ package com.company;
 import org.junit.Assert;
 import org.junit.Test;
 import rx.Observable;
+import rx.Observer;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
@@ -43,6 +44,10 @@ public class RxJava_Test {
                 println("[Incompatible publisher] end");
             }
     );
+
+    private Observable<String> errorPublisher = Observable.create(subscriber -> {
+        println(Long.valueOf("xxx").toString()); //this publisher will throw throw RuntimeException
+    });
 
     @Test
     public void test_publisher_subscriber_in_current_thread() throws Exception {
@@ -230,7 +235,7 @@ public class RxJava_Test {
             println("enter test function");
 
             slowPublisher
-                    .subscribeOn(createTestScheduler("RxNewThread-1"))
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
                     .mergeWith(
                             fastPublisher
                                     .subscribeOn(createTestScheduler("RxNewThread-2"))
@@ -290,7 +295,7 @@ public class RxJava_Test {
             println("enter test function");
 
             slowPublisher
-                    .subscribeOn(createTestScheduler("RxNewThread-1"))
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
                     .concatWith(
                             fastPublisher
                                     .subscribeOn(createTestScheduler("RxNewThread-2"))
@@ -325,7 +330,7 @@ public class RxJava_Test {
             CountDownLatch latch = new CountDownLatch(2);
 
             slowPublisher
-                    .subscribeOn(createTestScheduler("RxNewThread-1"))
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
                     .doOnNext(out_result1::set) //same as result -> out_result1.set(result)
                     .doOnCompleted(latch::countDown) //same as () -> latch.countDown()
                     .subscribe();
@@ -368,7 +373,7 @@ public class RxJava_Test {
             AtomicReference<StringBuilder> out_result2 = new AtomicReference<>();
 
             slowPublisher
-                    .subscribeOn(createTestScheduler("RxNewThread-1"))
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
                     .doOnNext(out_result1::set) //same as result -> out_result1.set(result)
                     .toCompletable() //so can mergeWith other type rx
                     .mergeWith(
@@ -399,6 +404,25 @@ public class RxJava_Test {
     }
 
     @Test
+    public void test_rx_will_do_nothing_if_not_subscribed() throws Exception {
+        new Thread(() -> {
+            println("enter test function");
+
+            Observable.create(subscriber -> {
+                        println("anything can be ok");
+                        subscriber.onNext("result");
+                        subscriber.onCompleted();
+                    }
+            );
+
+            println("leave test function");
+        }, "CurrentThread" /*threadName*/).start();
+
+        assertOut("17:08:28.050 @CurrentThread enter test function");
+        assertOut("17:08:28.050 @CurrentThread leave test function");
+    }
+
+    @Test
     public void test_rx_will_produce_if_subscribe_called_even_without_callback() throws Exception {
         new Thread(() -> {
             println("enter test function");
@@ -418,22 +442,96 @@ public class RxJava_Test {
     }
 
     @Test
-    public void test_rx_will_no_nothing_if_not_subscribed() throws Exception {
+    public void test_exception_in_blocking_mode() throws Exception {
         new Thread(() -> {
             println("enter test function");
 
-            Observable.create(subscriber -> {
-                        println("anything can be ok");
-                        subscriber.onNext("result");
-                        subscriber.onCompleted();
-                    }
-            );
+            try {
+                errorPublisher
+                        .toBlocking()
+                        .first();
+            } catch (Exception e) {
+                println("test1: " + e);
+            }
+
+            try {
+                errorPublisher
+                        .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
+                        .toBlocking()
+                        .first();
+            } catch (Exception e) {
+                println("test2: " + e);
+            }
 
             println("leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("17:08:28.050 @CurrentThread enter test function");
-        assertOut("17:08:28.050 @CurrentThread leave test function");
+        assertOut("21:00:28.515 @CurrentThread enter test function");
+        assertOut("21:00:28.543 @CurrentThread test1: java.lang.NumberFormatException: For input string: \"xxx\"");
+        assertOut("21:00:28.564 @CurrentThread test2: java.lang.NumberFormatException: For input string: \"xxx\"");
+        assertOut("21:00:28.574 @CurrentThread leave test function");
+    }
+
+    @Test
+    public void test_exception_in_non_blocking_mode_without_on_error_handler() throws Exception {
+        new Thread(() -> {
+            println("enter test function");
+
+            try {
+                errorPublisher
+                        .subscribe();
+            } catch (Exception e) {
+                println("test1: " + e);
+            }
+
+            println("leave test function");
+        }, "CurrentThread" /*threadName*/).start();
+
+        assertOut("21:06:34.485 @CurrentThread enter test function");
+        assertOut("21:06:34.526 @CurrentThread test1: rx.exceptions.OnErrorNotImplementedException: For input string: \"xxx\"");
+        assertOut("21:06:34.526 @CurrentThread leave test function");
+    }
+
+    @Test
+    public void test_exception_in_non_blocking_mode_with_on_error_handler() throws Exception {
+        new Thread(() -> {
+            println("enter test function");
+
+            try {
+                errorPublisher
+                        .doOnError(e -> println("---- test1: " + e))
+                        .subscribe();
+            } catch (Exception e) {
+                println("test1: " + e);
+            }
+
+            errorPublisher
+                    .subscribeOn(createTestScheduler("RxNewThread-1")) //cause publisher run in new thread
+                    .subscribe(new Observer<Object>() {
+                        @Override
+                        public void onCompleted() {
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            sleep(1); //sleep 1ms to just let other thread run so can get predictable output
+                            println("---- test2: " + e);
+                        }
+
+                        @Override
+                        public void onNext(Object o) {
+
+                        }
+                    });
+
+            println("leave test function");
+        }, "CurrentThread" /*threadName*/).start();
+
+        assertOut("21:44:02.527 @CurrentThread enter test function");
+        assertOut("21:44:02.528 @CurrentThread ---- test1: java.lang.NumberFormatException: For input string: \"xxx\"");
+        assertOut("21:44:02.528 @CurrentThread test1: rx.exceptions.OnErrorNotImplementedException: For input string: \"xxx\"");
+        assertOut("21:44:02.529 @CurrentThread leave test function");
+        assertOut("21:44:02.531 @RxNewThread-1 ---- test2: java.lang.NumberFormatException: For input string: \"xxx\"");
     }
 
     ////////////////////////////////////////////////////////////////////////
