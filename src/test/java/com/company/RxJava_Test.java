@@ -375,7 +375,7 @@ public class RxJava_Test {
                     .doOnNext(result -> {
                         out_result1.set(result);
                     })
-                    .toCompletable()
+                    .toCompletable() //so can mergeWith other type rx
                     .mergeWith(
                             incompatiblePublisher
                                     .subscribeOn(createTestScheduler("RxNewThread-2"))
@@ -393,16 +393,14 @@ public class RxJava_Test {
             println("leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        sleep(6000);
-
-//        assertOut("13:22:26.701 @RxNewThread-1 [SLOW publisher] begin");
-//        assertOut("13:22:26.702 @RxNewThread-1 [SLOW publisher] do some work");
-//        assertOut("13:22:29.705 @RxNewThread-1 [SLOW publisher] publish");
-//        assertOut("13:22:29.706 @RxNewThread-1 ---- subscriber got SLOW result");
-//        assertOut("13:22:29.707 @RxNewThread-1 [SLOW publisher] end");
-//        assertOut("13:22:29.758 @RxNewThread-2 [FAST publisher] begin");
-//        assertOut("13:22:29.758 @RxNewThread-2 ---- subscriber got FAST result");
-//        assertOut("13:22:29.759 @RxNewThread-2 [FAST publisher] end");
+        assertOut("19:29:38.712 @CurrentThread enter test function");
+        assertOut("19:29:38.824 @RxNewThread-1 [SLOW publisher] begin");
+        assertOut("19:29:38.825 @RxNewThread-1 [SLOW publisher] do some work");
+        assertOut("19:29:38.877 @RxNewThread-2 [Incompatible publisher] begin");
+        assertOut("19:29:38.882 @RxNewThread-2 [Incompatible publisher] end");
+        assertOut("19:29:41.828 @RxNewThread-1 [SLOW publisher] publish");
+        assertOut("19:29:41.828 @RxNewThread-1 [SLOW publisher] end");
+        assertOut("19:29:41.828 @CurrentThread ---- got SLOW result and incompatible result");
     }
 
     @Test
@@ -449,7 +447,8 @@ public class RxJava_Test {
 
 
     private static Scheduler createTestScheduler(String threadName) {
-        //just for test, get predictable thread name instead unpredictable thread pool name
+        //Normally, you can just return Schedulers.io() etc to get a cached thread from pool.
+        //In this test program, i want get predictable thread name, so use customized implementation
         return Schedulers.from(command -> new Thread(command, threadName).start());
     }
 
