@@ -342,7 +342,7 @@ public class RxJava_Test {
                 e.printStackTrace();
             }
 
-            sleep(5); //sleep 5ms to let other thread run so can get predictable output
+            sleep(1); //sleep 1
             println("---- got " + out_result1.get() + " and " + out_result2.get());
 
             println("leave test function");
@@ -381,7 +381,7 @@ public class RxJava_Test {
                     .toBlocking()
                     .subscribe();
 
-            sleep(5); //sleep 5ms to let other thread run so can get predictable output
+            sleep(1); //sleep 1ms to let other thread run so can get predictable output
             println("---- got " + out_result1.get() + " and " + out_result2.get());
 
             println("leave test function");
