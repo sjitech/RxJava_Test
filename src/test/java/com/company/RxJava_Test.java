@@ -320,7 +320,7 @@ public class RxJava_Test {
     }
 
     @Test
-    public void test_merge_3_different_type_rx_by_self_idea2() throws Exception {
+    public void test_merge_3_different_type_rx_by_self_idea() throws Exception {
         new Thread(() -> {
             println("Enter test function");
 
