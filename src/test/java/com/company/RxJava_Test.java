@@ -62,29 +62,29 @@ public class RxJava_Test {
     @Test
     public void test_publisher_subscriber_in_current_thread() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             slowPublisher
                     .subscribe(result -> {
                         println("---- subscriber got " + result);
                     });
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("17:02:56.571 @CurrentThread enter test function");
+        assertOut("17:02:56.571 @CurrentThread Enter test function");
         assertOut("17:02:56.667 @CurrentThread [SLOW publisher] begin");
         assertOut("17:02:56.667 @CurrentThread [SLOW publisher] do some work");
         assertOut("17:02:59.668 @CurrentThread [SLOW publisher] publish");
         assertOut("17:02:59.668 @CurrentThread ---- subscriber got SLOW result");
         assertOut("17:02:59.668 @CurrentThread [SLOW publisher] end");
-        assertOut("17:02:59.669 @CurrentThread leave test function");
+        assertOut("17:02:59.669 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_publisher_in_a_thread_and_subscriber_also_in_same() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             slowPublisher
                     .subscribeOn(schedulerForWorkThread1) //cause publisher run in new thread
@@ -92,11 +92,11 @@ public class RxJava_Test {
                         println("---- subscriber got " + result);
                     });
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("11:49:51.169 @CurrentThread enter test function");
-        assertOut("11:49:51.217 @CurrentThread leave test function");
+        assertOut("11:49:51.169 @CurrentThread Enter test function");
+        assertOut("11:49:51.217 @CurrentThread Leave test function");
         assertOut("11:49:51.218 @RxWorkThread1 [SLOW publisher] begin");
         assertOut("11:49:51.218 @RxWorkThread1 [SLOW publisher] do some work");
         assertOut("11:49:54.221 @RxWorkThread1 [SLOW publisher] publish");
@@ -107,7 +107,7 @@ public class RxJava_Test {
     @Test
     public void test_publisher_in_a_thread_and_subscriber_in_another() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             slowPublisher
                     .subscribeOn(schedulerForWorkThread1) //cause publisher run in new thread
@@ -117,11 +117,11 @@ public class RxJava_Test {
                         println("---- subscriber got " + result);
                     });
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("12:41:10.523 @CurrentThread enter test function");
-        assertOut("12:41:10.676 @CurrentThread leave test function");
+        assertOut("12:41:10.523 @CurrentThread Enter test function");
+        assertOut("12:41:10.676 @CurrentThread Leave test function");
         assertOut("12:41:10.678 @RxWorkThread1 [SLOW publisher] begin");
         assertOut("12:41:10.678 @RxWorkThread1 [SLOW publisher] do some work");
         assertOut("12:41:13.682 @RxWorkThread1 [SLOW publisher] publish");
@@ -132,29 +132,29 @@ public class RxJava_Test {
     @Test
     public void test_rx_toBlocking_publisher_subscriber_all_in_current_thread() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             String result = slowPublisher
                     .toBlocking().first();
 
             println("---- got " + result);
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("00:31:52.775 @CurrentThread enter test function");
+        assertOut("00:31:52.775 @CurrentThread Enter test function");
         assertOut("00:31:52.792 @CurrentThread [SLOW publisher] begin");
         assertOut("00:31:52.793 @CurrentThread [SLOW publisher] do some work");
         assertOut("00:31:55.798 @CurrentThread [SLOW publisher] publish");
         assertOut("00:31:55.799 @CurrentThread [SLOW publisher] end");
         assertOut("00:31:55.800 @CurrentThread ---- got SLOW result");
-        assertOut("00:31:55.800 @CurrentThread leave test function");
+        assertOut("00:31:55.800 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_rx_toBlocking_publisher_in_a_thread() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             String result = slowPublisher
                     .subscribeOn(schedulerForWorkThread1) //cause publisher run in new thread
@@ -163,22 +163,22 @@ public class RxJava_Test {
             sleep(1); //sleep 1ms to let other thread run so can get predictable output
             println("---- got " + result);
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("00:33:41.042 @CurrentThread enter test function");
+        assertOut("00:33:41.042 @CurrentThread Enter test function");
         assertOut("00:33:41.210 @RxWorkThread1 [SLOW publisher] begin");
         assertOut("00:33:41.210 @RxWorkThread1 [SLOW publisher] do some work");
         assertOut("00:33:44.212 @RxWorkThread1 [SLOW publisher] publish");
         assertOut("00:33:44.213 @RxWorkThread1 [SLOW publisher] end");
         assertOut("00:33:44.214 @CurrentThread ---- got SLOW result");
-        assertOut("00:33:44.214 @CurrentThread leave test function");
+        assertOut("00:33:44.214 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_toBlocking_simulation() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             AtomicReference<String> out_result = new AtomicReference<>();
 
@@ -206,23 +206,23 @@ public class RxJava_Test {
             sleep(1); //sleep 1ms to let other thread run so can get predictable output
             println("---- got " + out_result.get());
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("00:35:22.900 @CurrentThread enter test function");
+        assertOut("00:35:22.900 @CurrentThread Enter test function");
         assertOut("00:35:23.019 @RxWorkThread1 [SLOW publisher] begin");
         assertOut("00:35:23.019 @RxWorkThread1 [SLOW publisher] do some work");
         assertOut("00:35:26.023 @RxWorkThread1 [SLOW publisher] publish");
         assertOut("00:35:26.024 @RxWorkThread1 [SLOW publisher] end");
         assertOut("00:35:26.026 @RxWorkThread2 ---- subscriber got SLOW result");
         assertOut("00:35:26.027 @CurrentThread ---- got SLOW result");
-        assertOut("00:35:26.028 @CurrentThread leave test function");
+        assertOut("00:35:26.028 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_merge_in_parallel_but_result_order_not_predictable() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             slowPublisher
                     .subscribeOn(schedulerForWorkThread1) //cause publisher run in new thread
@@ -235,11 +235,11 @@ public class RxJava_Test {
 
                     });
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("10:50:56.507 @CurrentThread enter test function");
-        assertOut("10:50:56.637 @CurrentThread leave test function");
+        assertOut("10:50:56.507 @CurrentThread Enter test function");
+        assertOut("10:50:56.637 @CurrentThread Leave test function");
         assertOut("10:50:56.638 @RxWorkThread1 [SLOW publisher] begin");
         assertOut("10:50:56.638 @RxWorkThread1 [SLOW publisher] do some work");
         assertOut("10:50:56.690 @RxWorkThread2 [FAST publisher] begin");
@@ -253,7 +253,7 @@ public class RxJava_Test {
     @Test
     public void test_merge_in_serial_if_not_specify_schedule_thread() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             slowPublisher
                     .mergeWith(
@@ -264,10 +264,10 @@ public class RxJava_Test {
 
                     });
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("10:52:59.765 @CurrentThread enter test function");
+        assertOut("10:52:59.765 @CurrentThread Enter test function");
         assertOut("10:52:59.846 @CurrentThread [SLOW publisher] begin");
         assertOut("10:52:59.846 @CurrentThread [SLOW publisher] do some work");
         assertOut("10:53:02.849 @CurrentThread [SLOW publisher] publish");
@@ -276,13 +276,13 @@ public class RxJava_Test {
         assertOut("10:53:02.904 @CurrentThread [FAST publisher] begin");
         assertOut("10:53:02.904 @CurrentThread ---- subscriber got FAST result");
         assertOut("10:53:02.904 @CurrentThread [FAST publisher] end");
-        assertOut("10:53:02.905 @CurrentThread leave test function");
+        assertOut("10:53:02.905 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_concat_will_always_serially_so_predictable_order() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             slowPublisher
                     .subscribeOn(schedulerForWorkThread1) //cause publisher run in new thread
@@ -295,11 +295,11 @@ public class RxJava_Test {
 
                     });
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("10:53:55.314 @CurrentThread enter test function");
-        assertOut("10:53:55.454 @CurrentThread leave test function");
+        assertOut("10:53:55.314 @CurrentThread Enter test function");
+        assertOut("10:53:55.454 @CurrentThread Leave test function");
         assertOut("10:53:55.456 @RxWorkThread1 [SLOW publisher] begin");
         assertOut("10:53:55.456 @RxWorkThread1 [SLOW publisher] do some work");
         assertOut("10:53:58.461 @RxWorkThread1 [SLOW publisher] publish");
@@ -322,7 +322,7 @@ public class RxJava_Test {
     @Test
     public void test_merge_3_different_type_rx_by_self_idea2() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             RxResultAndSignal<String> r1 = new RxResultAndSignal<>();
             RxResultAndSignal<StringBuilder> r2 = new RxResultAndSignal<>();
@@ -373,10 +373,10 @@ public class RxJava_Test {
             println("---- got all result: {" + r1.result + "}, {" + r2.result + "}, {" + r3.result + "}");
             println("---- got all error: {" + r1.error + "}, {" + r2.error + "}, {" + r3.error + "}");
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("13:27:55.033 @CurrentThread enter test function");
+        assertOut("13:27:55.033 @CurrentThread Enter test function");
         assertOut("13:27:55.065 @RxWorkThread1 [SLOW publisher] begin");
         assertOut("13:27:55.065 @RxWorkThread1 [SLOW publisher] do some work");
         assertOut("13:27:55.082 @RxWorkThread2 [Incompatible publisher] begin");
@@ -387,13 +387,13 @@ public class RxJava_Test {
         assertOut("13:27:58.070 @RxWorkThread1 [SLOW publisher] end");
         assertOut("13:27:58.071 @CurrentThread ---- got all result: {SLOW result}, {Incompatible result}, {null}");
         assertOut("13:27:58.071 @CurrentThread ---- got all error: {null}, {null}, {java.lang.NullPointerException}");
-        assertOut("13:27:58.071 @CurrentThread leave test function");
+        assertOut("13:27:58.071 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_merge_3_different_type_rx() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             RxResult<String> r1 = new RxResult<>();
             RxResult<StringBuilder> r2 = new RxResult<>();
@@ -427,10 +427,10 @@ public class RxJava_Test {
             println("---- got all result: {" + r1.result + "}, {" + r2.result + "}, {" + r3.result + "}");
             println("---- got all error: {" + r1.error + "}, {" + r2.error + "}, {" + r3.error + "}");
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("13:47:50.789 @CurrentThread enter test function");
+        assertOut("13:47:50.789 @CurrentThread Enter test function");
         assertOut("13:47:50.852 @RxWorkThread1 [SLOW publisher] begin");
         assertOut("13:47:50.852 @RxWorkThread1 [SLOW publisher] do some work");
         assertOut("13:47:50.862 @RxWorkThread2 [Incompatible publisher] begin");
@@ -446,40 +446,40 @@ public class RxJava_Test {
     @Test
     public void test_rx_will_produce_if_subscribe_called_even_without_callback() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             slowPublisher
                     .subscribe();
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("17:08:28.050 @CurrentThread enter test function");
+        assertOut("17:08:28.050 @CurrentThread Enter test function");
         assertOut("17:08:28.145 @CurrentThread [SLOW publisher] begin");
         assertOut("17:08:28.145 @CurrentThread [SLOW publisher] do some work");
         assertOut("17:08:31.145 @CurrentThread [SLOW publisher] publish");
         assertOut("17:08:31.146 @CurrentThread [SLOW publisher] end");
-        assertOut("17:08:31.146 @CurrentThread leave test function");
+        assertOut("17:08:31.146 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_rx_will_do_nothing_if_not_subscribed() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             Observable.create(subscriber -> println("anything can be ok"));
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("17:08:28.050 @CurrentThread enter test function");
-        assertOut("17:08:28.050 @CurrentThread leave test function");
+        assertOut("17:08:28.050 @CurrentThread Enter test function");
+        assertOut("17:08:28.050 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_exception_in_blocking_mode_will_always_throw_out_in_current_thread() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             try {
                 errorPublisher
@@ -505,21 +505,21 @@ public class RxJava_Test {
                 println("---- test3: " + e);
             }
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("14:38:43.078 @CurrentThread enter test function");
+        assertOut("14:38:43.078 @CurrentThread Enter test function");
         assertOut("14:38:43.113 @CurrentThread ---- test1: java.lang.NullPointerException");
         assertOut("14:38:43.126 @CurrentThread ---- test2: java.lang.NullPointerException");
         assertOut("14:38:43.152 @RxWorkThread1 -------- java.lang.NullPointerException");
         assertOut("14:38:43.152 @CurrentThread ---- test3: java.lang.NullPointerException");
-        assertOut("14:38:43.152 @CurrentThread leave test function");
+        assertOut("14:38:43.152 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_exception_without_on_error_handler() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             try {
                 errorPublisher
@@ -529,17 +529,17 @@ public class RxJava_Test {
                 println("---- should not come here : " + e);
             }
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("21:06:34.342 @CurrentThread enter test function");
-        assertOut("21:06:34.397 @CurrentThread leave test function");
+        assertOut("21:06:34.342 @CurrentThread Enter test function");
+        assertOut("21:06:34.397 @CurrentThread Leave test function");
     }
 
     @Test
     public void test_exception_with_on_error_handler() throws Exception {
         new Thread(() -> {
-            println("enter test function");
+            println("Enter test function");
 
             errorPublisher
                     .subscribeOn(schedulerForWorkThread1) //cause publisher run in new thread
@@ -552,11 +552,11 @@ public class RxJava_Test {
                         //nothing
                     });
 
-            println("leave test function");
+            println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("14:26:02.439 @CurrentThread enter test function");
-        assertOut("14:26:02.459 @CurrentThread leave test function");
+        assertOut("14:26:02.439 @CurrentThread Enter test function");
+        assertOut("14:26:02.459 @CurrentThread Leave test function");
         assertOut("14:26:02.462 @RxWorkThread1 -------- java.lang.NullPointerException");
     }
 
