@@ -477,7 +477,7 @@ public class RxJava_Test {
     }
 
     @Test
-    public void test_exception_in_blocking_mode_will_always_throw_out_in_current_thread() throws Exception {
+    public void test_error_in_blocking_mode_will_always_throw_out_in_current_thread() throws Exception {
         new Thread(() -> {
             println("Enter test function");
 
@@ -499,7 +499,7 @@ public class RxJava_Test {
             try {
                 errorPublisher
                         .subscribeOn(schedulerForWorkThread1) //cause publisher run in new thread
-                        .doOnError(e -> println("-------- " + e))
+                        .doOnError(e -> {/*do nothing*/})
                         .toBlocking().first();
             } catch (Exception e) {
                 println("---- test3: " + e);
@@ -511,13 +511,12 @@ public class RxJava_Test {
         assertOut("14:38:43.078 @CurrentThread Enter test function");
         assertOut("14:38:43.113 @CurrentThread ---- test1: java.lang.NullPointerException");
         assertOut("14:38:43.126 @CurrentThread ---- test2: java.lang.NullPointerException");
-        assertOut("14:38:43.152 @RxWorkThread1 -------- java.lang.NullPointerException");
         assertOut("14:38:43.152 @CurrentThread ---- test3: java.lang.NullPointerException");
         assertOut("14:38:43.152 @CurrentThread Leave test function");
     }
 
     @Test
-    public void test_exception_without_on_error_handler() throws Exception {
+    public void test_error_subscribe_without_error_handler() throws Exception {
         new Thread(() -> {
             println("Enter test function");
 
@@ -537,7 +536,36 @@ public class RxJava_Test {
     }
 
     @Test
-    public void test_exception_with_on_error_handler() throws Exception {
+    public void test_error_subscribe_without_error_handler_cause_OnErrorNotImplementedException() throws Exception {
+        new Thread(() -> {
+            println("Enter test function");
+
+            try {
+                errorPublisher
+                        .subscribe();
+            } catch (Exception e) {
+                println("---- test1 error: " + e);
+            }
+
+            try {
+                errorPublisher
+                        .doOnError(e -> {/*do nothing*/})
+                        .subscribe();
+            } catch (Exception e) {
+                println("---- test2 error: " + e);
+            }
+
+            println("Leave test function");
+        }, "CurrentThread" /*threadName*/).start();
+
+        assertOut("14:15:57.268 @CurrentThread Enter test function");
+        assertOut("14:15:57.304 @CurrentThread ---- test1 error: rx.exceptions.OnErrorNotImplementedException");
+        assertOut("14:15:57.308 @CurrentThread ---- test2 error: rx.exceptions.OnErrorNotImplementedException");
+        assertOut("14:15:57.308 @CurrentThread Leave test function");
+    }
+
+    @Test
+    public void test_error_subscribe_with_error_handler() throws Exception {
         new Thread(() -> {
             println("Enter test function");
 
