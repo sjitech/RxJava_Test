@@ -2,7 +2,9 @@ package com.company;
 
 import org.junit.Assert;
 import org.junit.Test;
-import rx.*;
+import rx.Completable;
+import rx.Observable;
+import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
 import java.time.LocalTime;
@@ -11,6 +13,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
+@SuppressWarnings("CodeBlock2Expr")
 public class RxJava_Test {
 
     private Observable<String> slowPublisher = Observable.create(subscriber -> {
@@ -45,10 +48,12 @@ public class RxJava_Test {
             }
     );
 
+    @SuppressWarnings({"ConstantConditions", "RedundantStringToString"})
     private Observable<String> errorPublisher = Observable.create(subscriber -> {
         println(((String) null).toString()); //this publisher will throw throw RuntimeException
     });
 
+    @SuppressWarnings({"ConstantConditions", "RedundantStringToString"})
     private Observable<Number> buggyPublisher = Observable.create(subscriber -> {
         sleep(15); //sleep 10ms to just let other thread run so can get predictable output
         println("[Buggy publisher] begin");
