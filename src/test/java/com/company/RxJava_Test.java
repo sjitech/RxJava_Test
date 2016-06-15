@@ -446,6 +446,7 @@ public class RxJava_Test {
         assertOut("13:47:53.854 @RxWorkThread1 [SLOW publisher] end");
         assertOut("13:47:53.856 @CurrentThread ---- got all result: {SLOW result}, {Incompatible result}, {null}");
         assertOut("13:47:53.856 @CurrentThread ---- got all error: {null}, {null}, {java.lang.NullPointerException}");
+        assertOut("13:47:53.856 @CurrentThread Leave test function");
     }
 
     @Test
