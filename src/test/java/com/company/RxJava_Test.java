@@ -575,12 +575,22 @@ public class RxJava_Test {
             println("Enter test function");
 
             errorPublisher
+                    .subscribe(result -> {
+                        //nothing
+                    }, e -> { //onError
+                        sleep(1); //sleep 1ms to just let other thread run so can get predictable output
+                        println("-------- error1: " + e);
+                    }, () -> { //onComplete
+                        //nothing
+                    });
+
+            errorPublisher
                     .subscribeOn(schedulerForWorkThread1) //cause publisher run in new thread
                     .subscribe(result -> {
                         //nothing
                     }, e -> { //onError
                         sleep(1); //sleep 1ms to just let other thread run so can get predictable output
-                        println("-------- " + e);
+                        println("-------- error2: " + e);
                     }, () -> { //onComplete
                         //nothing
                     });
@@ -588,9 +598,10 @@ public class RxJava_Test {
             println("Leave test function");
         }, "CurrentThread" /*threadName*/).start();
 
-        assertOut("14:26:02.439 @CurrentThread Enter test function");
-        assertOut("14:26:02.459 @CurrentThread Leave test function");
-        assertOut("14:26:02.462 @RxWorkThread1 -------- java.lang.NullPointerException");
+        assertOut("16:19:20.813 @CurrentThread Enter test function");
+        assertOut("16:19:20.830 @CurrentThread -------- error1: java.lang.NullPointerException");
+        assertOut("16:19:20.840 @CurrentThread Leave test function");
+        assertOut("16:19:20.843 @RxWorkThread1 -------- error2: java.lang.NullPointerException");
     }
 
     ////////////////////////////////////////////////////////////////////////
