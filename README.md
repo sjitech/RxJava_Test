@@ -1,6 +1,8 @@
 # RxJava_Test
 Test RxJava producer/consumer threading
 
+For detail description, see http://my.oschina.net/osexp2003/blog/688428
+
 Conclusion:
    Same as http://stackoverflow.com/a/29364009/2293666
    
